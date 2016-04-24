@@ -1,0 +1,9 @@
+*.xml
+*.hex
+LedStripBlueTooth_vs01.vcxproj
+*.filters
+Release/LedStripBlueTooth_vs01.ino.elf
+*.elf
+Debug/board.buildinfo
+*.buildinfo
+.vs/LedStripBlueTooth_vs01/v14/.suo

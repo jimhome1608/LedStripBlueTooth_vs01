@@ -2,7 +2,9 @@
 #include "WS2812_Definitions.h"
 
 #define PIN 5
-#define MIDDLE_PIN  85
+#define MID_LED  85
+#define LEFT_PIN  139
+#define RIGHT_PIN  30
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = pin number (most are valid)
@@ -25,6 +27,18 @@ void overHeadLight(uint16_t midPoint, uint32_t c) {
 	strip.show();
 }
 
+void runHereToThere(uint16_t startPoint, uint16_t endPoint, uint32_t c, uint8_t wait) {
+	for (uint16_t i = startPoint; i<endPoint; i++) {
+		strip.setPixelColor(i, c);
+		strip.show();
+		delay(wait);
+		strip.setPixelColor(i, BLACK);
+	}
+	strip.setPixelColor(endPoint, c);
+	strip.show();
+}
+
+
 void colorFill(uint32_t c) {
 	for (uint16_t i = 0; i<strip.numPixels(); i++) {
 		strip.setPixelColor(i, c);
@@ -37,8 +51,7 @@ void setup(void) {
 	strip.begin();
 	strip.setBrightness(100);
 	colorFill(BLACK);
-	overHeadLight(MIDDLE_PIN + 40, BLUE);
-	overHeadLight(MIDDLE_PIN - 40, BLUE);
+	fill_from_centre(WHITE, 0);
 }
 
 void colorWipe(uint32_t c, uint8_t wait) {
@@ -46,6 +59,29 @@ void colorWipe(uint32_t c, uint8_t wait) {
 		strip.setPixelColor(i, c);
 		strip.show();
 		delay(wait);
+	}
+}
+
+void fill_from_centre(uint32_t c, uint8_t wait) {
+	int l = 0;
+	int r = 0;
+	for (int left_end = LEFT_PIN; left_end > MID_LED + 30; left_end--) {
+		int counter = 0;
+		for (int count = MID_LED; count < left_end; count++) {
+			l = count;
+			counter++;
+			r = MID_LED - counter;
+			strip.setPixelColor(l, c);
+			strip.setPixelColor(r, c);
+			strip.show();
+			delay(wait);
+			strip.setPixelColor(l, BLACK);
+			strip.setPixelColor(r, BLACK);
+			strip.show();
+		}
+		strip.setPixelColor(l, c);
+		strip.setPixelColor(r, c);
+		strip.show();
 	}
 }
 
@@ -68,43 +104,37 @@ void loop(void) {
 		if (incomingString.equals("ON")) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
-			overHeadLight(MIDDLE_PIN + 40, WHITE);
-			overHeadLight(MIDDLE_PIN - 40, WHITE);
+			fill_from_centre(WHITE, 0);
 			incomingString = "";
 		}	
 		if (incomingString.equals("BLUE")) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
-			overHeadLight(MIDDLE_PIN + 40, BLUE);
-			overHeadLight(MIDDLE_PIN - 40, BLUE);
+			fill_from_centre(BLUE, 0);
 			incomingString = "";
 		}
 		if (incomingString.equals("PURPLE")) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
-			overHeadLight(MIDDLE_PIN + 40, PURPLE);
-			overHeadLight(MIDDLE_PIN - 40, PURPLE);
+			fill_from_centre(PURPLE, 0);
 			incomingString = "";
 		}
 		if (incomingString.equals("GREEN")) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
-			overHeadLight(MIDDLE_PIN + 40, GREEN);
-			overHeadLight(MIDDLE_PIN - 40, PURPLE);
+			fill_from_centre(GREEN, 0);
 			incomingString = "";
 		}
 		if (incomingString.equals("RED")) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
-			overHeadLight(MIDDLE_PIN + 40, RED);
-			overHeadLight(MIDDLE_PIN - 40, RED);
+			fill_from_centre(RED, 0);
 			incomingString = "";
 		}
 		if (incomingString.equals("PINK")) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
-			overHeadLight(MIDDLE_PIN + 40, PINK);
-			overHeadLight(MIDDLE_PIN - 40, PINK);
+			fill_from_centre(PINK, 0);
 			incomingString = "";
 		}
 	}
