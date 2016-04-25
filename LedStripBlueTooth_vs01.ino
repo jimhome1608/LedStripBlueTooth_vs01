@@ -3,21 +3,49 @@
 
 #define PIN 5
 #define MID_LED  85
-#define LEFT_PIN  139
-#define RIGHT_PIN  30
+#define LEFT_LED  139
+#define RIGHT_LED  30
 
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_RGB     Pixels are wired for RGB bitstream
-//   NEO_GRB     Pixels are wired for GRB bitstream
-//   NEO_KHZ400  400 KHz bitstream (e.g. FLORA pixels)
-//   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED strip)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(180, PIN, NEO_GRB + NEO_KHZ800);
-
 
 String incomingString = "";
 
+
+void setup(void) {
+	Serial.begin(115200);
+	strip.begin();
+	strip.setBrightness(100);
+	//colorFill(GREEN);
+	//fill_from_centre(WHITE, 0);
+	//blendToColor(RED);
+	colorFill(BLACK);
+	fill_from_centre(WHITE, 0);
+}
+
+void blendToColor(uint32_t c) {
+	uint32_t currentColor = 0;
+	uint8_t red = 0;
+	uint8_t green = 0;
+	uint8_t blue = 0;
+
+	while (red < 255) {
+		for (uint16_t i = RIGHT_LED; i<LEFT_LED; i++) {
+			currentColor = strip.getPixelColor(i);
+			red = currentColor &   0xFF0000;
+			//Serial.write(red);
+			green = currentColor & 0x00FF00;
+			blue = currentColor &  0x0000FF;
+			if (blue > 0)
+				blue--;
+			if (green > 0)
+				green--;
+			if (red < 255)
+				red++;
+			strip.setPixelColor(i, strip.Color(red, green, blue));
+			strip.show();
+		}
+	}
+}
 
 void overHeadLight(uint16_t midPoint, uint32_t c) {
 	for (uint16_t i = 0; i<15; i++) {
@@ -46,13 +74,6 @@ void colorFill(uint32_t c) {
 	strip.show();
 }
 
-void setup(void) {
-	Serial.begin(115200);
-	strip.begin();
-	strip.setBrightness(100);
-	colorFill(BLACK);
-	fill_from_centre(WHITE, 0);
-}
 
 void colorWipe(uint32_t c, uint8_t wait) {
 	for (uint16_t i = 0; i<strip.numPixels(); i++) {
@@ -65,7 +86,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
 void fill_from_centre(uint32_t c, uint8_t wait) {
 	int l = 0;
 	int r = 0;
-	for (int left_end = LEFT_PIN; left_end > MID_LED + 30; left_end--) {
+	for (int left_end = LEFT_LED; left_end > MID_LED + 30; left_end--) {
 		int counter = 0;
 		for (int count = MID_LED; count < left_end; count++) {
 			l = count;
