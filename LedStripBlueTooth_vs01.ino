@@ -9,12 +9,13 @@
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(180, PIN, NEO_GRB + NEO_KHZ800);
 
 String incomingString = "";
+int Brightness = 100;
 
 
 void setup(void) {
 	Serial.begin(115200);
 	strip.begin();
-	strip.setBrightness(100);
+	strip.setBrightness(Brightness);
 	//colorFill(GREEN);
 	//fill_from_centre(WHITE, 0);
 	//blendToColor(RED);
@@ -24,9 +25,9 @@ void setup(void) {
 
 void blendToColor(uint32_t c) {
 	uint32_t currentColor = 0;
-	uint8_t red = 0;
-	uint8_t green = 0;
-	uint8_t blue = 0;
+	uint32_t red = 0;
+	uint32_t green = 0;
+	uint32_t blue = 0;
 
 	while (red < 255) {
 		for (uint16_t i = RIGHT_LED; i<LEFT_LED; i++) {
@@ -117,47 +118,66 @@ void loop(void) {
 			Serial.write(incomingString.c_str());
 			incomingString = "";
 		}
-		if (incomingString.equals("OFF")) {
+		if (incomingString.indexOf("{OFF}") >=0) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
 			incomingString = "";
 		}
-		if (incomingString.equals("ON")) {
+		if (incomingString.indexOf("{ON}") >= 0) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
 			fill_from_centre(WHITE, 0);
 			incomingString = "";
 		}	
-		if (incomingString.equals("BLUE")) {
+		if (incomingString.indexOf("{BLUE}") >= 0) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
 			fill_from_centre(BLUE, 0);
 			incomingString = "";
 		}
-		if (incomingString.equals("PURPLE")) {
+		if (incomingString.indexOf("{PURPLE}") >= 0) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
 			fill_from_centre(PURPLE, 0);
 			incomingString = "";
 		}
-		if (incomingString.equals("GREEN")) {
+		if (incomingString.indexOf("{GREEN}") >= 0) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
 			fill_from_centre(GREEN, 0);
 			incomingString = "";
 		}
-		if (incomingString.equals("RED")) {
+		if (incomingString.indexOf("{RED}") >= 0) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
 			fill_from_centre(RED, 0);
 			incomingString = "";
 		}
-		if (incomingString.equals("PINK")) {
+		if (incomingString.indexOf("{PINK}") >= 0) {
 			Serial.write(incomingString.c_str());
 			colorFill(BLACK);
 			fill_from_centre(PINK, 0);
 			incomingString = "";
 		}
+		if (incomingString.indexOf("{B+}") >= 0) {
+			Serial.write(incomingString.c_str());
+			Brightness= Brightness+10;
+			if (Brightness > 255)
+				Brightness = 255;
+			strip.setBrightness(Brightness);
+			strip.show();
+			incomingString = "";
+		}
+		if (incomingString.indexOf("{B-}") >= 0) {
+			Serial.write(incomingString.c_str());
+			Brightness = Brightness - 10;
+			if (Brightness < 10)
+				Brightness = 10;
+			strip.setBrightness(Brightness);
+			strip.show();
+			incomingString = "";
+		}
+		
 	}
 
 }
