@@ -159,20 +159,14 @@ void loop(void) {
 			fill_from_centre(PINK, 0);
 			incomingString = "";
 		}
-		if (incomingString.indexOf("{B+}") >= 0) {
-			Serial.write(incomingString.c_str());
-			Brightness= Brightness+10;
-			if (Brightness > 255)
-				Brightness = 255;
-			strip.setBrightness(Brightness);
-			strip.show();
-			incomingString = "";
-		}
-		if (incomingString.indexOf("{B-}") >= 0) {
-			Serial.write(incomingString.c_str());
-			Brightness = Brightness - 10;
-			if (Brightness < 10)
-				Brightness = 10;
+		if ((incomingString.indexOf("{B=") >= 0) && (incomingString.indexOf("}") >= 0)) {			
+			int _from = incomingString.indexOf("=")+1;
+			int _to = incomingString.indexOf("}");
+			String bvalue = incomingString.substring(_from, _to);
+			Serial.write(bvalue.c_str());
+			if (bvalue.toInt() == 0)
+				return;
+			Brightness = bvalue.toInt();
 			strip.setBrightness(Brightness);
 			strip.show();
 			incomingString = "";
