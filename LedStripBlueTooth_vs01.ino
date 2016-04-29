@@ -25,7 +25,45 @@ void setup(void) {
 	//random_colors();
 	//top(WHITE);
 	//sides(WHITE);
+	bluePulse();
 	desk(WHITE, -1);
+}
+
+void bluePulse() {
+	uint32_t c = GREEN;
+	strip.setPixelColor(MID_LED, c);
+	strip.show();
+	for (int _counter = 0; _counter < 20; _counter++) {
+		for (int _brightness = 0; _brightness < 255; _brightness = _brightness + 8) {
+			strip.setBrightness(_brightness);
+			strip.setPixelColor(MID_LED, c);
+			strip.show();
+			if (Serial.available())
+				return;
+			delay(10);
+		}
+		for (int _brightness = 255; _brightness > 0; _brightness = _brightness - 8) {
+			strip.setBrightness(_brightness);
+			strip.setPixelColor(MID_LED, c);
+			strip.show();
+			if (Serial.available())
+				return;
+			delay(10);
+		}
+		if (c == GREEN) {
+			c = RED;
+			continue;
+		}		  
+		if (c == RED) {
+			c = BLUE;
+			continue;
+		}			
+		if (c == BLUE) {
+			c = GREEN;
+			continue;
+		}			
+	}
+	colorFill(BLACK);
 }
 
 void sides(uint32_t c) {
@@ -35,8 +73,7 @@ void sides(uint32_t c) {
 	for (uint16_t i = 7; i<RIGHT_LED; i++) {
 		strip.setPixelColor(i, c);
 	}
-	strip.show();
-	
+	strip.show();	
 }
 
 void top(uint32_t c) {
@@ -112,6 +149,7 @@ void loop(void) {
 	uint32_t color = 0;
 
 	if (Serial.available()) {
+		delay(100);
 		incomingByte = Serial.read();
 		incomingString = incomingString + incomingByte;
 		incomingString.trim();
@@ -149,6 +187,12 @@ void loop(void) {
 			incomingString = "";
 			random_colors();
 			return;			
+		}
+		if (incomingString.indexOf("PULSE") >= 0) {
+			Serial.write(incomingString.c_str());
+			incomingString = "";
+			bluePulse();
+			return;
 		}
 		if ( incomingString.indexOf("DESK") >= 0)  {			
 			Serial.write(incomingString.c_str());
