@@ -25,7 +25,7 @@ void setup(void) {
 	//random_colors();
 	//top(WHITE);
 	//sides(WHITE);
-	desk(YELLOW, -1);
+	desk(WHITE, -1);
 }
 
 void sides(uint32_t c) {
@@ -76,10 +76,10 @@ void desk(uint32_t c, int8_t wait) {
 	int l = 0;
 	int r = 0;
 	if (wait < 0) {
-		for (uint16_t i = LEFT_LED; i > MID_LED + 30; i--) {
+		for (uint16_t i = LEFT_LED; i >= MID_LED + 30; i--) {
 			strip.setPixelColor(i, c);
 		}
-		for (uint16_t i = MID_LED -  30; i > RIGHT_LED; i--) {
+		for (uint16_t i = MID_LED -  30; i >= RIGHT_LED; i--) {
 			strip.setPixelColor(i, c);
 		}
 		strip.show();
@@ -178,8 +178,15 @@ void loop(void) {
 			strip.setBrightness(Brightness);
 			strip.show();
 		}
-		incomingString = "";
+		int indexOfNewBeginning = incomingString.lastIndexOf("{");
+		if (indexOfNewBeginning >= 0)
+			incomingString = incomingString.substring(indexOfNewBeginning,255);
+		else
+			incomingString = "";
 		
+	}
+	else {
+		delay(10);
 	}
 
 }
