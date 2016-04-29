@@ -5,6 +5,7 @@
 #define MID_LED  85
 #define LEFT_LED  139
 #define RIGHT_LED  30
+#define MAX_LED  179
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(180, PIN, NEO_GRB + NEO_KHZ800);
 
@@ -13,6 +14,7 @@ int Brightness = 100;
 
 
 void setup(void) {
+	randomSeed(millis());
 	Serial.begin(115200);
 	strip.begin();
 	strip.setBrightness(Brightness);
@@ -20,53 +22,47 @@ void setup(void) {
 	//fill_from_centre(WHITE, 0);
 	//blendToColor(RED);
 	colorFill(BLACK);
-	fill_from_centre(WHITE, 0);
+	//random_colors();
+	//top(WHITE);
+	//sides(WHITE);
+	desk(YELLOW, -1);
 }
 
-void blendToColor(uint32_t c) {
-	uint32_t currentColor = 0;
-	uint32_t red = 0;
-	uint32_t green = 0;
-	uint32_t blue = 0;
-
-	while (red < 255) {
-		for (uint16_t i = RIGHT_LED; i<LEFT_LED; i++) {
-			currentColor = strip.getPixelColor(i);
-			red = currentColor &   0xFF0000;
-			//Serial.write(red);
-			green = currentColor & 0x00FF00;
-			blue = currentColor &  0x0000FF;
-			if (blue > 0)
-				blue--;
-			if (green > 0)
-				green--;
-			if (red < 255)
-				red++;
-			strip.setPixelColor(i, strip.Color(red, green, blue));
-			strip.show();
-		}
-	}
-}
-
-void overHeadLight(uint16_t midPoint, uint32_t c) {
-	for (uint16_t i = 0; i<15; i++) {
-		strip.setPixelColor(midPoint + i, c);
-		strip.setPixelColor(midPoint - i, c);
-	}
-	strip.show();
-}
-
-void runHereToThere(uint16_t startPoint, uint16_t endPoint, uint32_t c, uint8_t wait) {
-	for (uint16_t i = startPoint; i<endPoint; i++) {
+void sides(uint32_t c) {
+	for (uint16_t i = LEFT_LED; i<LEFT_LED+23; i++) {
 		strip.setPixelColor(i, c);
-		strip.show();
-		delay(wait);
-		strip.setPixelColor(i, BLACK);
 	}
-	strip.setPixelColor(endPoint, c);
+	for (uint16_t i = 7; i<RIGHT_LED; i++) {
+		strip.setPixelColor(i, c);
+	}
 	strip.show();
+	
 }
 
+void top(uint32_t c) {
+	for (uint16_t i = LEFT_LED + 23; i<MAX_LED; i++) {
+		strip.setPixelColor(i, c);
+	}
+	for (uint16_t i = 0; i<8; i++) {
+		strip.setPixelColor(i, c);
+	}
+	strip.show();
+
+}
+
+
+void random_colors() {
+	uint32_t c = 0;
+	uint16_t led = 0;
+	while (!Serial.available()) {
+		led =  random(RIGHT_LED+30, LEFT_LED-30);
+		c = strip.Color(random(255), random(255), random(255));
+		strip.setPixelColor(led, c);
+		strip.show();
+		delay(10);
+	}
+	
+}
 
 void colorFill(uint32_t c) {
 	for (uint16_t i = 0; i<strip.numPixels(); i++) {
@@ -76,17 +72,19 @@ void colorFill(uint32_t c) {
 }
 
 
-void colorWipe(uint32_t c, uint8_t wait) {
-	for (uint16_t i = 0; i<strip.numPixels(); i++) {
-		strip.setPixelColor(i, c);
-		strip.show();
-		delay(wait);
-	}
-}
-
-void fill_from_centre(uint32_t c, uint8_t wait) {
+void desk(uint32_t c, int8_t wait) {
 	int l = 0;
 	int r = 0;
+	if (wait < 0) {
+		for (uint16_t i = LEFT_LED; i > MID_LED + 30; i--) {
+			strip.setPixelColor(i, c);
+		}
+		for (uint16_t i = MID_LED -  30; i > RIGHT_LED; i--) {
+			strip.setPixelColor(i, c);
+		}
+		strip.show();
+		return;
+	}
 	for (int left_end = LEFT_LED; left_end > MID_LED + 30; left_end--) {
 		int counter = 0;
 		for (int count = MID_LED; count < left_end; count++) {
@@ -110,54 +108,64 @@ void fill_from_centre(uint32_t c, uint8_t wait) {
 
 void loop(void) {
 	char incomingByte;
+	bool slide = false;
+	uint32_t color = 0;
+
 	if (Serial.available()) {
 		incomingByte = Serial.read();
 		incomingString = incomingString + incomingByte;
 		incomingString.trim();
-		if (incomingString.length() > 20) {
+		if (incomingString.length() > 25) {
 			Serial.write(incomingString.c_str());
 			incomingString = "";
 		}
-		if (incomingString.indexOf("{OFF}") >=0) {
-			Serial.write(incomingString.c_str());
-			colorFill(BLACK);
-			incomingString = "";
+		if (incomingString.indexOf("{") < 0) {
+			return; // waiting for START of command }
 		}
-		if (incomingString.indexOf("{ON}") >= 0) {
+		if (incomingString.indexOf("}") < 0) {
+			return; // waiting for end of command }
+		}
+		slide = incomingString.indexOf("SLIDE") >= 0;
+		color = BLACK;
+		if (incomingString.indexOf("WHITE") >= 0)
+			color = WHITE;
+		if (incomingString.indexOf("BLUE") >= 0)
+			color = BLUE;
+		if (incomingString.indexOf("PURPLE") >= 0)
+			color = PURPLE;
+		if (incomingString.indexOf("GREEN") >= 0)
+			color = GREEN;
+		if (incomingString.indexOf("RED") >= 0)
+			color = RED;
+		if (incomingString.indexOf("PINK") >= 0)
+			color = PINK;
+		if (incomingString.indexOf("BLACK") >= 0)
+			color = BLACK;
+		if (incomingString.indexOf("YELLOW") >= 0)
+			color = YELLOW;
+
+		if (incomingString.indexOf("RANDOM") >=0) {
 			Serial.write(incomingString.c_str());
-			colorFill(BLACK);
-			fill_from_centre(WHITE, 0);
 			incomingString = "";
+			random_colors();
+			return;			
+		}
+		if ( incomingString.indexOf("DESK") >= 0)  {			
+			Serial.write(incomingString.c_str());
+			if (color == BLACK)
+				slide = false;
+			if (slide)
+				desk(color, 0);
+			else
+				desk(color, -1);			
 		}	
-		if (incomingString.indexOf("{BLUE}") >= 0) {
+		if (incomingString.indexOf("SIDES") >= 0) {
 			Serial.write(incomingString.c_str());
-			colorFill(BLACK);
-			fill_from_centre(BLUE, 0);
-			incomingString = "";
+			sides(color);
 		}
-		if (incomingString.indexOf("{PURPLE}") >= 0) {
+		if (incomingString.indexOf("TOP") >= 0) {
 			Serial.write(incomingString.c_str());
-			colorFill(BLACK);
-			fill_from_centre(PURPLE, 0);
-			incomingString = "";
-		}
-		if (incomingString.indexOf("{GREEN}") >= 0) {
-			Serial.write(incomingString.c_str());
-			colorFill(BLACK);
-			fill_from_centre(GREEN, 0);
-			incomingString = "";
-		}
-		if (incomingString.indexOf("{RED}") >= 0) {
-			Serial.write(incomingString.c_str());
-			colorFill(BLACK);
-			fill_from_centre(RED, 0);
-			incomingString = "";
-		}
-		if (incomingString.indexOf("{PINK}") >= 0) {
-			Serial.write(incomingString.c_str());
-			colorFill(BLACK);
-			fill_from_centre(PINK, 0);
-			incomingString = "";
+			top(color);
 		}
 		if ((incomingString.indexOf("{B=") >= 0) && (incomingString.indexOf("}") >= 0)) {			
 			int _from = incomingString.indexOf("=")+1;
@@ -169,8 +177,8 @@ void loop(void) {
 			Brightness = bvalue.toInt();
 			strip.setBrightness(Brightness);
 			strip.show();
-			incomingString = "";
 		}
+		incomingString = "";
 		
 	}
 
