@@ -178,8 +178,9 @@ void loop(void) {
 			strip.setBrightness(Brightness);
 			strip.show();
 		}
+		int indexOfLastEnd = incomingString.lastIndexOf("}");
 		int indexOfNewBeginning = incomingString.lastIndexOf("{");
-		if (indexOfNewBeginning >= 0)
+		if (indexOfNewBeginning > indexOfLastEnd)
 			incomingString = incomingString.substring(indexOfNewBeginning,255);
 		else
 			incomingString = "";
